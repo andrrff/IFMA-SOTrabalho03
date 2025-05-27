@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciamento de Memória - Apresentação</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #2573b3;
+            --secondary-color: #174873;
+            --accent-color: #61dafb;
+            --text-color: #333;
+            --light-bg: #f8f9fa;
+            --slide-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            --slide-border: 1px solid rgba(0,0,0,0.1);
+        }
+        
+        body {
+            font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            line-height: 1.7;
+            margin: 0;
+            padding: 0;
+            background-color: #1a1a1a;
+            color: var(--text-color);
+            transition: background-color 0.3s ease;
+            overflow: hidden;
+            height: 100vh;
+        }
+        
+        #presentation-container {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .slide-container {
+            width: 100%;
+            height: 100%;
+            overflow-y: auto;
+            position: absolute;
+            transition: transform 0.6s ease-in-out, opacity 0.6s ease-in-out;
+            background-color: var(--light-bg);
+            padding: 40px;
+            box-sizing: border-box;
+            transform: translateX(100%);
+            opacity: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .slide-container.active {
+            transform: translateX(0);
+            opacity: 1;
+            z-index: 10;
+        }
+        
+        .slide-container.prev {
+            transform: translateX(-100%);
+            opacity: 0;
+            z-index: 5;
+        }
+        
+        .slide {
+            background-color: #fff;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: var(--slide-shadow);
+            border: var(--slide-border);
+            max-width: 90%;
+            width: 1000px;
+            position: relative;
+        }
+        
+        .slide h1, .slide h2, .slide h3 {
+            margin-top: 0;
+        }
+        
+        .slide h1 {
+            text-align: center;
+            color: var(--primary-color);
+            border-bottom: 3px solid var(--accent-color);
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+            font-size: 2.2em;
+        }
+        
+        .slide h2 {
+            color: var(--primary-color);
+            border-bottom: 2px solid #eaeaea;
+            padding-bottom: 8px;
+            font-size: 1.8em;
+        }
+        
+        .slide h3 {
+            color: var(--secondary-color);
+            font-size: 1.4em;
+            margin-top: 20px;
+        }
+        
+        ul {
+            list-style-type: disc;
+            margin-left: 20px;
+            padding-left: 0;
+        }
+        
+        ul ul {
+            margin-left: 20px;
+        }
+        
+        .figure-ref {
+            font-style: italic;
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        .page-ref {
+            font-weight: bold;
+            color: #e67e22;
+            font-size: 0.9em;
+        }
+        
+        .emphasis-points {
+            background-color: #f0f7ff;
+            border-left: 4px solid var(--primary-color);
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        
+        .emphasis-points strong {
+            color: var(--secondary-color);
+        }
+        
+        .navigation {
+            position: fixed;
+            bottom: 20px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            z-index: 100;
+            background-color: rgba(255,255,255,0.8);
+            padding: 10px;
+            border-radius: 30px;
+            width: fit-content;
+            margin: 0 auto;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .nav-button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-button:hover {
+            background-color: var(--secondary-color);
+            transform: scale(1.1);
+        }
+        
+        .nav-button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+            transform: scale(1);
+        }
+        
+        .fullscreen-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            z-index: 100;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        
+        .fullscreen-btn:hover {
+            background-color: var(--secondary-color);
+            transform: scale(1.1);
+        }
+        
+        .pagination-info {
+            font-size: 14px;
+            color: var(--text-color);
+            margin: 0 15px;
+        }
+        
+        .figure-container {
+            text-align: center;
+            margin: 20px auto;
+            width: 80%;
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .figure-container img {
+            max-width: 100%;
+            height: auto;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        .figure-caption {
+            margin-top: 10px;
+            font-style: italic;
+            color: #555;
+        }
+
+        @media (max-width: 768px) {
+            .slide {
+                width: 90%;
+                padding: 15px;
+            }
+            .navigation {
+                padding: 8px;
+                gap: 10px;
+            }
+            .nav-button {
+                width: 36px;
+                height: 36px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div id="presentation-container">
+    <!-- Slide 1 -->
+    <div class="slide-container" id="slide-1">
+        <div class="slide">
+            <h1>Gerenciamento de Memória (Capítulo 3)</h1>
+            <p style="text-align:center;">Apresentação em Grupo</p>
+            <p style="text-align:center;">Disciplina: Sistemas Operacionais</p>
+            <p style="text-align:center;">Integrantes: [Listar Nomes]</p>
+        </div>
+    </div>
+
+    <!-- Slide 2 -->
+    <div class="slide-container" id="slide-2">
+        <div class="slide">
+            <h2>Aluno 1: Introdução e Gerenciamento de Memória Sem Abstração</h2>
+            
+            <h3>Tópicos Principais:</h3>
+            <ul>
+                <li>A importância do gerenciamento de memória <span class="page-ref">(p. 125)</span></li>
+                <li>Lei de Parkinson para programas</li>
+                <li>O desejo do programador: memória ideal</li>
+                <li>Conceito de Hierarquia de Memórias (cache, RAM, disco)</li>
+                <li>Função do Gerenciador de Memória</li>
+                <li>**3.1 Sem abstração de memória** <span class="page-ref">(pp. 125-127)</span>
+                    <ul>
+                        <li>Primeiros computadores: programa via memória física diretamente</li>
+                        <li>Organização da memória: SO na parte inferior/superior, ROM, BIOS</li>
+                        <li>Problemas: impossibilidade de múltiplos programas, falta de proteção</li>
+                        <li>Solução parcial com hardware (IBM 360, chaves de proteção)</li>
+                        <li>Problema da realocação e realocação estática (limitações)</li>
+                    </ul>
+                </li>
+            </ul>
+
+            <div class="figure-container">
+                <img src="images/3-1.png" alt="Figura 3.1 - Organização da memória">
+                <p class="figure-caption">Figura 3.1: Organização da memória: SO na parte inferior/superior, ROM, BIOS</p>
+            </div>
+            
+            <div class="figure-container">
+                <img src="images/3-2.png" alt="Figura 3.2 - Problema da realocação">
+                <p class="figure-caption">Figura 3.2: Problema da realocação</p>
+            </div>
+            
+            <div class="emphasis-points">
+                <strong>Pontos de Ênfase:</strong>
+                <ul>
+                    <li>Justificar a necessidade do gerenciamento de memória.</li>
+                    <li>Explicar os desafios e limitações dos primeiros sistemas sem abstração.</li>
+                    <li>Destacar o problema da realocação como motivador para soluções mais avançadas.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 3 -->
+    <div class="slide-container" id="slide-3">
+        <div class="slide">
+            <h2>Aluno 2: Espaços de Endereçamento e Swapping</h2>
+            
+            <h3>Tópicos Principais:</h3>
+            <ul>
+                <li>**3.2 Uma abstração de memória: espaços de endereçamento** <span class="page-ref">(pp. 128-129)</span>
+                    <ul>
+                        <li>A noção de espaço de endereçamento (proteção e realocação)</li>
+                        <li>Exemplos de espaços de endereçamento (números de telefone, IPv4)</li>
+                        <li>Registradores base e limite: como funcionam</li>
+                    </ul>
+                </li>
+                <li>**3.2.2 Troca de processos (Swapping)** <span class="page-ref">(pp. 130-131)</span>
+                    <ul>
+                        <li>Motivação: demanda total de memória &gt; RAM disponível</li>
+                        <li>Funcionamento do swapping</li>
+                        <li>Compactação de memória</li>
+                        <li>Alocação de memória para processos em crescimento</li>
+                    </ul>
+                </li>
+            </ul>
+            
+            <div class="figure-container">
+                <img src="images/3-3.png" alt="Figura 3.3 - Registradores base e limite">
+                <p class="figure-caption">Figura 3.3: Registradores base e limite: como funcionam</p>
+            </div>
+            
+            <div class="figure-container">
+                <img src="images/3-4.png" alt="Figura 3.4 - Funcionamento do swapping">
+                <p class="figure-caption">Figura 3.4: Funcionamento do swapping</p>
+            </div>
+            
+            <div class="figure-container">
+                <img src="images/3-5.png" alt="Figura 3.5 - Alocação de memória para processos em crescimento">
+                <p class="figure-caption">Figura 3.5: Alocação de memória para processos em crescimento</p>
+            </div>
+            
+            <div class="emphasis-points">
+                <strong>Pontos de Ênfase:</strong>
+                <ul>
+                    <li>O conceito de espaço de endereçamento como a primeira grande abstração.</li>
+                    <li>Como registradores base/limite implementam essa abstração.</li>
+                    <li>O swapping como mecanismo para lidar com a sobrecarga de memória.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 4 -->
+    <div class="slide-container" id="slide-4">
+        <div class="slide">
+            <h2>Aluno 3: Gerenciamento de Memória Livre e Introdução à Memória Virtual</h2>
+            
+            <h3>Tópicos Principais:</h3>
+            <ul>
+                <li>**3.2.3 Gerenciando a memória livre** <span class="page-ref">(pp. 131-133)</span>
+                    <ul>
+                        <li>Mapas de bits</li>
+                        <li>Listas encadeadas</li>
+                        <li>Algoritmos de alocação: First fit, Next fit, Best fit, Worst fit, Quick fit</li>
+                    </ul>
+                </li>
+                <li>**3.3 Memória Virtual - Introdução** <span class="page-ref">(p. 134)</span>
+                    <ul>
+                        <li>Problema do "bloatware"</li>
+                        <li>Solução antiga: Sobreposições (overlays)</li>
+                        <li>A ideia básica da memória virtual</li>
+                    </ul>
+                </li>
+            </ul>
+            
+            <div class="figure-container">
+                <img src="images/3-6.png" alt="Figura 3.6 - Mapas de bits e listas encadeadas">
+                <p class="figure-caption">Figura 3.6: (a,b) Mapas de bits e (c) listas encadeadas</p>
+            </div>
+            
+            <div class="figure-container">
+                <img src="images/3-7.png" alt="Figura 3.7 - Listas encadeadas">
+                <p class="figure-caption">Figura 3.7: Listas encadeadas para gerenciamento da memória</p>
+            </div>
+            
+            <div class="emphasis-points">
+                <strong>Pontos de Ênfase:</strong>
+                <ul>
+                    <li>Comparar os métodos de gerenciamento de memória livre.</li>
+                    <li>Explicar e comparar os diferentes algoritmos de alocação.</li>
+                    <li>Introduzir o conceito de memória virtual.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 5 -->
+    <div class="slide-container" id="slide-5">
+        <div class="slide">
+            <h2>Aluno 4: Paginação – Conceitos Fundamentais e Tabelas de Página</h2>
+            
+            <h3>Tópicos Principais:</h3>
+            <ul>
+                <li>**3.3.1 Paginação** <span class="page-ref">(pp. 134-136)</span>
+                    <ul>
+                        <li>Endereços virtuais e a MMU</li>
+                        <li>Páginas (virtuais) e Quadros de página (físicos)</li>
+                        <li>Mapeamento de endereços</li>
+                        <li>Falta de Página (Page Fault) e o bit Presente/Ausente</li>
+                    </ul>
+                </li>
+                <li>**3.3.2 Tabelas de Páginas** <span class="page-ref">(pp. 136-138)</span>
+                    <ul>
+                        <li>Estrutura do endereço virtual</li>
+                        <li>A Tabela de Páginas como função de mapeamento</li>
+                        <li>Estrutura de uma Entrada da Tabela de Páginas: Número do quadro, P/A, Proteção, Modificada, Referenciada, Cache.</li>
+                    </ul>
+                </li>
+            </ul>
+            
+            <div class="figure-container">
+                <img src="images/3-8.png" alt="Figura 3.8 - Endereços virtuais e a MMU">
+                <p class="figure-caption">Figura 3.8: Endereços virtuais e a MMU</p>
+            </div>
+            
+            <div class="figure-container">
+                <img src="images/3-9.png" alt="Figura 3.9 - Mapeamento de endereços">
+                <p class="figure-caption">Figura 3.9: Mapeamento de endereços</p>
+            </div>
+            
+            <div class="figure-container">
+                <img src="images/3-10.png" alt="Figura 3.10 - Estrutura do endereço virtual">
+                <p class="figure-caption">Figura 3.10: Estrutura do endereço virtual</p>
+            </div>
+            
+            <div class="figure-container">
+                <img src="images/3-11.png" alt="Figura 3.11 - Estrutura de uma Entrada da Tabela de Páginas">
+                <p class="figure-caption">Figura 3.11: Estrutura de uma Entrada da Tabela de Páginas</p>
+            </div>
+            
+            <div class="emphasis-points">
+                <strong>Pontos de Ênfase:</strong>
+                <ul>
+                    <li>O mecanismo central da paginação: como a MMU traduz endereços.</li>
+                    <li>A importância da Tabela de Páginas e seus campos.</li>
+                    <li>O que é uma falta de página.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 6 -->
+    <div class="slide-container" id="slide-6">
+        <div class="slide">
+            <h2>Aluno 5: Acelerando a Paginação e Lidando com Memórias Grandes</h2>
+            
+            <h3>Tópicos Principais:</h3>
+            <ul>
+                <li>**3.3.3 Acelerando a paginação** <span class="page-ref">(pp. 138-140)</span>
+                    <ul>
+                        <li>TLB (Translation Lookaside Buffers) / Memória Associativa</li>
+                        <li>Funcionamento da TLB: hit e miss</li>
+                        <li>Gerenciamento da TLB por software (soft miss, hard miss, page table walk)</li>
+                    </ul>
+                </li>
+                <li>**3.3.4 Tabelas de páginas para memórias grandes** <span class="page-ref">(pp. 141-143)</span>
+                    <ul>
+                        <li>Tabelas de páginas multinível</li>
+                        <li>Tabelas de páginas invertidas</li>
+                    </ul>
+                </li>
+            </ul>
+            
+            <div class="figure-container">
+                <img src="images/3-12.png" alt="Figura 3.12 - TLB (Translation Lookaside Buffers)">
+                <p class="figure-caption">Figura 3.12: TLB (Translation Lookaside Buffers)</p>
+            </div>
+            
+            <div class="figure-container">
+                <img src="images/3-13.png" alt="Figura 3.13 - Tabelas de páginas multinível">
+                <p class="figure-caption">Figura 3.13: Tabelas de páginas multinível</p>
+            </div>
+            
+            <div class="figure-container">
+                <img src="images/3-14.png" alt="Figura 3.14 - Tabelas de páginas invertidas">
+                <p class="figure-caption">Figura 3.14: Tabelas de páginas invertidas</p>
+            </div>
+            
+            <div class="emphasis-points">
+                <strong>Pontos de Ênfase:</strong>
+                <ul>
+                    <li>A importância da TLB para o desempenho.</li>
+                    <li>Como as tabelas de página multinível e invertidas abordam o problema do tamanho das tabelas.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 7 -->
+    <div class="slide-container" id="slide-7">
+        <div class="slide">
+            <h2>Aluno 6: Algoritmos de Substituição de Página</h2>
+            
+            <h3>Tópicos Principais:</h3>
+            <ul>
+                <li>**3.4 Algoritmos de substituição de páginas** <span class="page-ref">(pp. 144-152)</span>
+                    <ul>
+                        <li>O problema da substituição</li>
+                        <li>Algoritmo Ótimo</li>
+                        <li>Algoritmo NRU (Não Usadas Recentemente)</li>
+                        <li>Algoritmo FIFO</li>
+                        <li>Algoritmo Segunda Chance</li>
+                        <li>Algoritmo do Relógio</li>
+                        <li>Algoritmo LRU (Menos Recentemente Usada)</li>
+                        <li>Simulação de LRU: NFU e Envelhecimento (Aging)</li>
+                        <li>Algoritmo do Conjunto de Trabalho (Working Set)</li>
+                        <li>Algoritmo WSClock</li>
+                    </ul>
+                </li>
+                <li>Resumo dos algoritmos de substituição de página <span class="figure-ref">(Figura 3.21)</span> <span class="page-ref">(p. 153)</span></li>
+            </ul>
+            <div class="emphasis-points">
+                <strong>Pontos de Ênfase:</strong>
+                <ul>
+                    <li>Explicar a necessidade de algoritmos de substituição.</li>
+                    <li>Detalhar o funcionamento, vantagens e desvantagens dos principais algoritmos práticos (Relógio, Envelhecimento, WSClock).</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 8 -->
+    <div class="slide-container" id="slide-8">
+        <div class="slide">
+            <h2>Aluno 7: Questões de Projeto, Implementação e Segmentação</h2>
+            
+            <h3>Tópicos Principais:</h3>
+            <ul>
+                <li>**3.5 Questões de projeto para sistemas de paginação** <span class="page-ref">(pp. 153-160)</span>
+                    <ul>
+                        <li>Políticas de alocação local vs. global</li>
+                        <li>Controle de carga e PFF (Page Fault Frequency)</li>
+                        <li>Tamanho de página</li>
+                        <li>Páginas compartilhadas e Bibliotecas Compartilhadas</li>
+                        <li>Arquivos Mapeados em Memória</li>
+                        <li>Política de Limpeza</li>
+                    </ul>
+                </li>
+                <li>**3.6 Questões de Implementação (Visão geral)** <span class="page-ref">(pp. 161-165)</span>
+                    <ul>
+                        <li>Envolvimento do SO com a paginação</li>
+                        <li>Tratamento de Falta de Página</li>
+                        <li>Backup de Instrução</li>
+                        <li>Armazenamento de Apoio (Backing Store)</li>
+                        <li>Separação Política vs. Mecanismo</li>
+                    </ul>
+                </li>
+                <li>**3.7 Segmentação (Visão geral)** <span class="page-ref">(pp. 166-168)</span>
+                    <ul>
+                        <li>Conceito e vantagens</li>
+                        <li>Comparação com paginação</li>
+                        <li>Implementação pura e fragmentação externa</li>
+                    </ul>
+                </li>
+                <li>Segmentação com Paginação (MULTICS e Intel x86 - *conceito breve*) <span class="page-ref">(pp. 168-173)</span> <span class="figure-ref">(Figuras 3.34-3.41)</span></li>
+                <li>**3.8 Pesquisa em gerenciamento de memória (breve)** <span class="page-ref">(p. 174)</span></li>
+                <li>**3.9 Resumo do Capítulo (breve)** <span class="page-ref">(p. 175)</span></li>
+            </ul>
+            <div class="emphasis-points">
+                <strong>Pontos de Ênfase:</strong>
+                <ul>
+                    <li>As decisões de projeto que impactam o desempenho da paginação.</li>
+                    <li>Os aspectos práticos da implementação.</li>
+                    <li>O conceito de segmentação e sua combinação com paginação.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Last Slide - Conclusion -->
+    <div class="slide-container" id="slide-9">
+        <div class="slide">
+            <h1>Conclusão Geral</h1>
+            <p>O gerenciamento eficiente da memória é crucial para o desempenho e a capacidade de multiprogramação dos sistemas operacionais modernos, utilizando abstrações como espaços de endereçamento, paginação e segmentação para otimizar o uso deste recurso finito.</p>
+            
+            <div class="figure-container">
+                <img src="images/conclusao.png" alt="Conclusão - Panorama do gerenciamento de memória">
+                <p class="figure-caption">Panorama geral das técnicas de gerenciamento de memória</p>
+            </div>
+            
+            <h2>Perguntas?</h2>
+        </div>
+    </div>
+</div>
+
+<div class="navigation">
+    <button id="prev-btn" class="nav-button" disabled><i class="fas fa-chevron-left"></i></button>
+    <span class="pagination-info">Slide <span id="current-slide">1</span> / <span id="total-slides">9</span></span>
+    <button id="next-btn" class="nav-button"><i class="fas fa-chevron-right"></i></button>
+</div>
+
+<button id="fullscreen-btn" class="fullscreen-btn"><i class="fas fa-expand"></i></button>
+
+<script>
+    // Slide navigation logic
+    const slidesContainer = document.getElementById('presentation-container');
+    const slides = document.querySelectorAll('.slide-container');
+    const prevBtn = document.getElementById('prev-btn');
+    const nextBtn = document.getElementById('next-btn');
+    const currentSlideEl = document.getElementById('current-slide');
+    const totalSlidesEl = document.getElementById('total-slides');
+    const fullscreenBtn = document.getElementById('fullscreen-btn');
+    
+    let currentSlide = 1;
+    const totalSlides = slides.length;
+    
+    // Set total slides count
+    totalSlidesEl.textContent = totalSlides;
+    
+    // Initialize the first slide as active
+    slides[0].classList.add('active');
+    
+    function goToSlide(slideNumber) {
+        if (slideNumber < 1 || slideNumber > totalSlides) return;
+        
+        // Remove all classes first
+        slides.forEach(slide => {
+            slide.classList.remove('active', 'prev');
+        });
+        
+        // Add active class to current slide
+        slides[slideNumber - 1].classList.add('active');
+        
+        // Add prev class to previous slides for animation direction
+        if (slideNumber > 1) {
+            for (let i = 0; i < slideNumber - 1; i++) {
+                slides[i].classList.add('prev');
+            }
+        }
+        
+        // Update current slide indicator
+        currentSlide = slideNumber;
+        currentSlideEl.textContent = currentSlide;
+        
+        // Update button states
+        prevBtn.disabled = currentSlide === 1;
+        nextBtn.disabled = currentSlide === totalSlides;
+    }
+    
+    prevBtn.addEventListener('click', () => {
+        if (currentSlide > 1) {
+            goToSlide(currentSlide - 1);
+        }
+    });
+    
+    nextBtn.addEventListener('click', () => {
+        if (currentSlide < totalSlides) {
+            goToSlide(currentSlide + 1);
+        }
+    });
+    
+    // Keyboard navigation
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+            if (currentSlide < totalSlides) {
+                goToSlide(currentSlide + 1);
+            }
+        } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+            if (currentSlide > 1) {
+                goToSlide(currentSlide - 1);
+            }
+        }
+    });
+    
+    // Fullscreen functionality
+    fullscreenBtn.addEventListener('click', () => {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen().catch(err => {
+                console.log(`Error attempting to enable fullscreen: ${err.message}`);
+            });
+            fullscreenBtn.innerHTML = '<i class="fas fa-compress"></i>';
+        } else {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+                fullscreenBtn.innerHTML = '<i class="fas fa-expand"></i>';
+            }
+        }
+    });
+    
+    // Handle fullscreen change event
+    document.addEventListener('fullscreenchange', () => {
+        if (!document.fullscreenElement) {
+            fullscreenBtn.innerHTML = '<i class="fas fa-expand"></i>';
+        }
+    });
+</script>
+</body>
+</html>
